@@ -38,4 +38,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
 });
 
+Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
+    Route::get('/templates', [App\Http\Controllers\SuperAdminController::class, 'templates'])->name('superadmin.templates');
+    Route::get('/upload', [App\Http\Controllers\SuperAdminController::class, 'uploadExam'])->name('superadmin.upload');
+    Route::post('/upload', [App\Http\Controllers\SuperAdminController::class, 'processExam'])->name('superadmin.process');
+    Route::post('/generate', [App\Http\Controllers\SuperAdminController::class, 'generateQuestions'])->name('superadmin.generate');
+    Route::delete('/templates/{template}', [App\Http\Controllers\SuperAdminController::class, 'deleteTemplate'])->name('superadmin.templates.delete');
+});
+
 require __DIR__.'/auth.php';

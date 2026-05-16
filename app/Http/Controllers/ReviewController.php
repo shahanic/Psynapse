@@ -1,22 +1,45 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Exam;
 use App\Models\Question;
+use App\Models\Result;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
-    public function mcq(Exam $exam)
+    private function getQuestions(Exam $exam, string $type = 'multiple_choice', string $difficulty = 'medium', int $count = 10)
     {
-        $questions = $exam->questions()->get();
+        $questions = Question::where('topic_id', $exam->topic_id)
+            ->where('type', $type)
+            ->where('difficulty', $difficulty)
+            ->inRandomOrder()
+            ->take($count)
+            ->get();
+
+        if ($questions->isEmpty()) {
+            $questions = Question::where('topic_id', $exam->topic_id)
+                ->inRandomOrder()
+                ->take($count)
+                ->get();
+        }
+
+        if ($questions->isEmpty()) {
+            $questions = Question::inRandomOrder()->take($count)->get();
+        }
+
+        return $questions;
+    }
+
+    public function mcq(Exam $exam, Request $request)
+    {
+        $questions = $this->getQuestions($exam, 'multiple_choice', $request->get('difficulty', 'medium'), $request->get('count', 10));
         return view('review.mcq', compact('exam', 'questions'));
     }
 
     public function submitMcq(Request $request, Exam $exam)
     {
-        $questions = $exam->questions()->get();
+        $questions = Question::whereIn('id', array_keys($request->input('answers', [])))->get();
         $answers = $request->input('answers', []);
         $results = [];
         $score = 0;
@@ -27,7 +50,7 @@ class ReviewController extends Controller
             if ($isCorrect) $score++;
             $results[] = [
                 'question' => $question->question,
-                'choices' => json_decode($question->choices),
+                'choices' => $question->choices,
                 'correct_answer' => $question->answer,
                 'user_answer' => $userAnswer,
                 'is_correct' => $isCorrect,
@@ -35,20 +58,33 @@ class ReviewController extends Controller
             ];
         }
 
-        $percentage = count($questions) > 0 ? round(($score / count($questions)) * 100) : 0;
+        $total = count($questions);
+        $percentage = $total > 0 ? round(($score / $total) * 100) : 0;
+
+        // Save result
+        Result::create([
+            'user_id' => auth()->id(),
+            'exam_id' => $exam->id,
+            'score' => $score,
+            'total' => $total,
+            'percentage' => $percentage,
+            'type' => 'multiple_choice',
+            'difficulty' => $exam->difficulty ?? 'medium',
+            'answers' => $results,
+        ]);
 
         return view('review.result', compact('exam', 'results', 'score', 'percentage', 'questions'));
     }
 
-    public function flashcard(Exam $exam)
+    public function flashcard(Exam $exam, Request $request)
     {
-        $questions = $exam->questions()->get();
+        $questions = $this->getQuestions($exam, 'multiple_choice', $request->get('difficulty', 'medium'), $request->get('count', 10));
         return view('review.flashcard', compact('exam', 'questions'));
     }
 
-    public function mock(Exam $exam)
+    public function mock(Exam $exam, Request $request)
     {
-        $questions = $exam->questions()->inRandomOrder()->get();
+        $questions = $this->getQuestions($exam, 'multiple_choice', $request->get('difficulty', 'medium'), 30);
         return view('review.mock', compact('exam', 'questions'));
     }
 

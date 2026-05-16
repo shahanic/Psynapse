@@ -1,17 +1,28 @@
 <x-app-layout>
     <div class="fade-up" style="margin-bottom: 40px;">
-        <p class="page-eyebrow">Upload</p>
-        <h1 class="page-title">Add your <em>reviewer.</em></h1>
+        <p class="page-eyebrow">New Exam</p>
+        <h1 class="page-title">Start a <em>review session.</em></h1>
     </div>
 
     <div class="card upload-card fade-up-1">
-        <form method="POST" action="/exams" enctype="multipart/form-data">
+        <form method="POST" action="/exams">
             @csrf
 
             <div class="form-group">
-                <label class="form-label">Exam Title</label>
-                <input type="text" name="title" class="form-input" placeholder="e.g. DOST Math Reviewer 2024" required>
+                <label class="form-label">Session Title</label>
+                <input type="text" name="title" class="form-input" placeholder="e.g. DOST Math Practice #1" required>
                 @error('title') <p class="form-error">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Topic</label>
+                <select name="topic_id" class="form-input" required>
+                    <option value="">Select a topic...</option>
+                    @foreach($topics as $topic)
+                    <option value="{{ $topic->id }}">{{ $topic->name }} ({{ strtoupper($topic->exam_type) }})</option>
+                    @endforeach
+                </select>
+                @error('topic_id') <p class="form-error">{{ $message }}</p> @enderror
             </div>
 
             <div class="form-group">
@@ -38,12 +49,23 @@
                             <span class="type-name">Identification</span>
                         </div>
                     </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Difficulty</label>
+                <div class="type-grid">
                     <label class="type-card">
-                        <input type="radio" name="question_type" value="fill_blank">
-                        <div class="type-inner">
-                            <span class="type-icon">_</span>
-                            <span class="type-name">Fill in the Blank</span>
-                        </div>
+                        <input type="radio" name="difficulty" value="easy" checked>
+                        <div class="type-inner"><span class="type-name">Easy</span></div>
+                    </label>
+                    <label class="type-card">
+                        <input type="radio" name="difficulty" value="medium">
+                        <div class="type-inner"><span class="type-name">Medium</span></div>
+                    </label>
+                    <label class="type-card">
+                        <input type="radio" name="difficulty" value="hard">
+                        <div class="type-inner"><span class="type-name">Hard</span></div>
                     </label>
                 </div>
             </div>
@@ -60,19 +82,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Upload File</label>
-                <div class="file-drop" onclick="document.getElementById('file').click()">
-                    <p class="file-drop-icon">↑</p>
-                    <p class="file-drop-title">Click to upload</p>
-                    <p class="file-drop-sub">PDF or TXT — max 10MB</p>
-                    <input type="file" id="file" name="file" accept=".pdf,.txt" style="display:none"
-                        onchange="document.querySelector('.file-drop-title').textContent = this.files[0].name">
-                </div>
-                @error('file') <p class="form-error">{{ $message }}</p> @enderror
-            </div>
-
-            <button type="submit" class="btn-primary">Upload & Generate Questions</button>
+            <button type="submit" class="btn-primary">Start Review</button>
         </form>
     </div>
 </x-app-layout>

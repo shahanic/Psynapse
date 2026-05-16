@@ -38,25 +38,24 @@
     </div>
 
     {{-- Stats --}}
-    <div class="section-label fade-up-2" style="margin-top: 48px;">Your Stats</div>
     <div class="stats-row fade-up-2">
-        <div class="stat-card card">
-            <p class="stat-label">Exams Uploaded</p>
-            <p class="stat-value">0</p>
-        </div>
-        <div class="stat-card card">
-            <p class="stat-label">Questions Answered</p>
-            <p class="stat-value">0</p>
-        </div>
-        <div class="stat-card card accent">
-            <p class="stat-label">Avg. Score</p>
-            <p class="stat-value">—</p>
-        </div>
-        <div class="stat-card card">
-            <p class="stat-label">Study Streak</p>
-            <p class="stat-value">0 <span class="stat-unit">days</span></p>
-        </div>
+    <div class="stat-card card">
+        <p class="stat-label">Exams Taken</p>
+        <p class="stat-value">{{ $totalExams }}</p>
     </div>
+    <div class="stat-card card">
+        <p class="stat-label">Questions Answered</p>
+        <p class="stat-value">{{ $results->sum('total') }}</p>
+    </div>
+    <div class="stat-card card accent">
+        <p class="stat-label">Avg. Score</p>
+        <p class="stat-value">{{ round($avgScore) }}<span class="stat-unit">%</span></p>
+    </div>
+    <div class="stat-card card">
+        <p class="stat-label">Best Score</p>
+        <p class="stat-value">{{ $results->max('percentage') ?? 0 }}<span class="stat-unit">%</span></p>
+    </div>
+</div>
 
     {{-- Exam Library --}}
     <div class="section-label fade-up-3" style="margin-top: 48px;">Exam Library</div>
